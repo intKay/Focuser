@@ -75,6 +75,8 @@ Focuser is a self-discipline tool, not an administrator-proof security boundary.
 
 ## For contributors and agents
 
+Current source development adds [encrypted configuration import/export](docs/release/config-transfer.md). This feature is not included in the existing v1.3.0-rc.2 release assets.
+
 The runtime is standard-library Python plus vanilla JavaScript. Windows desktop dependencies are optional. Start with [architecture and API v1](docs/release/architecture.md) and [contribution rules](CONTRIBUTING.md).
 
 ```sh

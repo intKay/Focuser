@@ -16,6 +16,7 @@ from urllib.parse import urlsplit
 
 from screen_time_core import BudgetStore
 from screen_time_core import validate_groups
+from screen_time_config import export_config, import_config
 from screen_time_challenge import ChallengeGuard, ChallengeRequired, relaxation
 from screen_time_platform import select_platform, supervise
 from screen_time_runtime import API_VERSION, VERSION, DataLock, default_data_dir, instance_id
@@ -112,7 +113,10 @@ def make_handler(store, stop, root, port, adapter=None):
                 return self.reply(result)
             if route == "/api/apps":
                 return self.reply({"apps": adapter.available_apps(), 'supported': adapter.native_apps})
-            paths = {"/": "index.html", "/app.js": "app.js", "/style.css": "style.css", '/i18n.js': 'i18n.js', '/i18n.json': 'i18n.json'}
+            if route == '/api/config/export':
+                with store.lock:
+                    return self.reply(export_config(store.state['groups']))
+            paths = {"/": "index.html", "/app.js": "app.js", "/style.css": "style.css", '/i18n.js': 'i18n.js', '/i18n.json': 'i18n.json', '/config-transfer.js':'config-transfer.js'}
             if route not in paths:
                 return self.reply({"error": "Not found"}, 404)
             if route in ('/i18n.js', '/i18n.json'):
@@ -158,6 +162,12 @@ def make_handler(store, stop, root, port, adapter=None):
                     result = store.submit_intent(data.get("client"), data.get("group"), data.get("purpose"))
                 elif route == "/api/bonus":
                     result = store.claim_minute(data.get("group"))
+                elif route == '/api/config/preview':
+                    groups = import_config(data.get('config'), adapter.native_apps)
+                    with store.lock:
+                        result = {'groups':groups, 'requires_challenge':relaxation(store.state['groups'],groups),
+                                  'categories':len(groups), 'websites':sum(len(g['domains']) for g in groups),
+                                  'apps':sum(len(g['apps']) for g in groups)}
                 elif route == "/api/config":
                     groups = validate_groups(data.get('groups'))
                     with store.lock:

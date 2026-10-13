@@ -10,6 +10,7 @@ build/
 !.env.example
 *.log
 state*.json
+*.focuser
 *.bak
 *.backup
 .codex/

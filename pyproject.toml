@@ -23,7 +23,7 @@ focuser-release = "screen_time_release:main"
 focuser-startup = "screen_time_startup:main"
 
 [tool.setuptools]
-py-modules = ["screen_time_core", "screen_time_storage", "screen_time_challenge", "screen_time_server", "screen_time_runtime", "screen_time_platform", "screen_time_windows", "screen_time_gate", "screen_time_launcher", "screen_time_release", "screen_time_startup", "screen_time_i18n", "screen_time_setup"]
+py-modules = ["screen_time_core", "screen_time_storage", "screen_time_challenge", "screen_time_server", "screen_time_runtime", "screen_time_platform", "screen_time_windows", "screen_time_gate", "screen_time_launcher", "screen_time_release", "screen_time_startup", "screen_time_i18n", "screen_time_setup", "screen_time_config"]
 packages = ["focuser_assets"]
 package-dir = {"" = "scripts", "focuser_assets" = "resources/screen_time"}
 include-package-data = false

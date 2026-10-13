@@ -159,3 +159,4 @@ nav button.pending:after{content:"";width:7px;height:7px;border-radius:50%;backg
 .ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--mute);margin-top:5px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 20px 14px;border-top:1px solid var(--line)}.chips small{color:var(--mute);font-size:12px;margin-right:2px}
 .chip{background:var(--fill2);color:var(--blue);border-radius:999px;padding:8px 14px;font-size:13px}.chip:disabled{opacity:.35}
+#confirm-text{white-space:pre-line}#password-form label{display:block;text-align:left;margin:12px 0}#password-form input{display:block;width:100%;box-sizing:border-box;margin-top:6px}

@@ -294,6 +294,44 @@ $('save').onclick=async()=>{const status=$('saved');status.classList.remove('err
 $('pause').onclick=async()=>{try{state=await api('pause',{paused:!state.paused});render()}catch(e){toast(t(e.message),true)}};
 $('quit').onclick=async()=>{if(await confirmBox(t('退出并恢复访问？'),t('今日已用额度会保留；退出期间网站与 App 不受限制。'),t('退出'))){try{await api('quit',{});$('connection').textContent=t('已退出。双击桌面“屏幕使用时间 Local”入口后可恢复限制。')}catch(e){toast(t(e.message),true)}}};
 window.addEventListener('beforeunload',e=>{if(dirty()){e.preventDefault();e.returnValue='';}});
+
+/* Private configuration files. Apply through the existing guarded config API. */
+function requestPassword(exporting){return new Promise(resolve=>{
+ const dialog=$('config-password'),password=$('transfer-password'),repeat=$('repeat-password');
+ $('password-title').textContent=t(exporting?'加密导出配置':'解密配置');$('repeat-label').hidden=!exporting;
+ repeat.required=exporting;password.value=repeat.value='';$('password-error').textContent='';
+ const finish=value=>{password.value=repeat.value='';dialog.close();resolve(value);};
+ $('password-form').onsubmit=e=>{e.preventDefault();if(password.value.length<12){$('password-error').textContent=t('密码至少需要12个字符');return;}
+  if(exporting&&password.value!==repeat.value){$('password-error').textContent=t('两次密码不一致');return;}finish(password.value);};
+ $('password-cancel').onclick=()=>finish(null);dialog.oncancel=e=>{e.preventDefault();finish(null);};
+ dialog.showModal();password.focus();
+});}
+let transferBusy=false;
+function transferLock(busy){transferBusy=busy;$('export-config').disabled=$('import-config').disabled=busy;}
+function transferReady(){if(dirty()){toast(t('请先保存或放弃未保存的规则更改'),true);return false;}return !transferBusy;}
+$('export-config').onclick=async()=>{
+ if(!transferReady())return;transferLock(true);let password=null;
+ try{password=await requestPassword(true);if(password===null)return;
+  $('transfer-status').textContent=t('正在加密配置…');const config=await api('config/export');
+  const encrypted=await FocuserConfigTransfer.encrypt(config,password),url=URL.createObjectURL(new Blob([encrypted],{type:'application/octet-stream'}));
+  const link=el('a');link.href=url;link.download='focuser-config.focuser';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  $('transfer-status').textContent=t('加密配置已导出。请单独保管密码；文件不包含用量。');
+ }catch(error){$('transfer-status').textContent=t(error.message);}finally{password=null;transferLock(false);}
+};
+$('import-config').onclick=()=>{if(transferReady()){$('config-file').value='';$('config-file').click();}};
+$('config-file').onchange=async()=>{
+ const file=$('config-file').files[0];if(!file||!transferReady())return;transferLock(true);let password=null;
+ try{if(file.size>FocuserConfigTransfer.MAX_BYTES)throw Error(t('配置文件过大'));
+  password=await requestPassword(false);if(password===null)return;$('transfer-status').textContent=t('正在解密并检查配置…');
+  const config=await FocuserConfigTransfer.decrypt(await file.text(),password);password=null;
+  const preview=await api('config/preview',{config});
+  const names=preview.groups.map(g=>g.name+' · '+scheduleText(g)).join('\n');
+  const note=t(preview.requires_challenge?'此导入会放宽规则，继续后需要定积分验证。':'此导入不放宽规则，无需额外验证。');
+  if(!await confirmBox(t('确认导入配置？'),names+'\n\n'+note+'\n'+t('本机用量、额外分钟和暂停状态会保留。'),t('导入'))){$('transfer-status').textContent=t('已取消，限制保持原样');return;}
+  state=await api('config',{groups:preview.groups});loadDraft();render();if(view==='limits')renderLimits();
+  $('transfer-status').textContent=t('配置已导入；本机用量与额外分钟已保留。');
+ }catch(error){$('transfer-status').textContent=t(error.message);}finally{password=null;$('config-file').value='';transferLock(false);}
+};
 async function refresh(){try{state=await api('status');render()}catch{$('connection').textContent=t('本地服务未连接，请启动 Focuser 服务后刷新。')}}
 setInterval(refresh,1500);refresh();
 
