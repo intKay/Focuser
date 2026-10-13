@@ -1,5 +1,7 @@
+import './i18n.js';
 import {canonicalHost,canonicalSet,setCovers} from './vendor/rules.js';
 import './connection.js';
+const t=globalThis.FocuserI18n?.t||(value=>value);
 const chrome=globalThis.browser||globalThis.chrome;
 let API='http://127.0.0.1:18765',boundInstance=null;
 const detectedBrowser=/Vivaldi\//.test(navigator.userAgent)?'Vivaldi':/Firefox\//.test(navigator.userAgent)?'Firefox':/Edg\//.test(navigator.userAgent)?'Edge':/OPR\//.test(navigator.userAgent)?'Opera':'Chrome';
@@ -9,22 +11,22 @@ const ready=chrome.storage.local.get(['apiBase','boundInstance','browserName']).
 let status=null,lastFetch=0,pending=null,lastRules='';
 const session=crypto.randomUUID().replaceAll('-','');
 const offlineDefaults={paused:false,groups:[
-{id:'douyin',name:'抖音',enabled:true,blocked:true,domains:['douyin.com','iesdouyin.com']},
-{id:'social',name:'社区与视频',enabled:true,blocked:false,domains:['xiaohongshu.com','xhslink.com','x.com','twitter.com','t.co','xiaoheihe.cn','heybox.com','zhihu.com','youtube.com','youtu.be']}]};
+{id:'douyin',name:t('抖音'),enabled:true,blocked:true,domains:['douyin.com','iesdouyin.com']},
+{id:'social',name:t('社区与视频'),enabled:true,blocked:false,domains:['xiaohongshu.com','xhslink.com','x.com','twitter.com','t.co','xiaoheihe.cn','heybox.com','zhihu.com','youtube.com','youtu.be']}]};
 async function request(path,body){
  await ready;
  if(!boundInstance){
   const healthResponse=await fetch(API+'/api/health',{cache:'no-store',signal:AbortSignal.timeout(2500)});
   const health=await healthResponse.json();
-  if(!healthResponse.ok||health.service!=='focuser'||health.api_version!==1||!/^[a-f0-9]{32}$/.test(health.instance_id||''))throw Error('请启动兼容的 Focuser 服务');
+  if(!healthResponse.ok||health.service!=='focuser'||health.api_version!==1||!/^[a-f0-9]{32}$/.test(health.instance_id||''))throw Error(t('请启动兼容的 Focuser 服务'));
   boundInstance=health.instance_id;await chrome.storage.local.set({boundInstance});
  }
  const r=await fetch(API+path,{cache:'no-store',signal:AbortSignal.timeout(2500),...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,instance_id:boundInstance})}:{})});
- const data=await r.json();if(!r.ok){const error=Error(data.error||'请求失败');if(r.status!==409)error.httpStatus=r.status;throw error;}return data;
+ const data=await r.json();if(!r.ok){const error=Error(t(data.error)||t('请求失败'));if(r.status!==409)error.httpStatus=r.status;throw error;}return data;
 }
 async function accept(candidate){
- if(candidate.api_version!==1||!candidate.instance_id)throw Error('请升级本地 Focuser 服务');
- if(boundInstance&&boundInstance!==candidate.instance_id)throw Error('数据目录发生变化，保留已有规则并等待原服务');
+ if(candidate.api_version!==1||!candidate.instance_id)throw Error(t('请升级本地 Focuser 服务'));
+ if(boundInstance&&boundInstance!==candidate.instance_id)throw Error(t('数据目录发生变化，保留已有规则并等待原服务'));
  if(!boundInstance){boundInstance=candidate.instance_id;await chrome.storage.local.set({boundInstance});}
  status=candidate;return status;
 }
@@ -41,8 +43,8 @@ async function enforceRules(offline=false){
 async function refresh(force=false){
  await ready;
  if(pending)return pending;if(!force&&Date.now()-lastFetch<900)return;
- pending=(async()=>{try{await accept(await request('/api/heartbeat',{client:session+':health',group:null,active:false,browser:browserName}));lastFetch=Date.now();await chrome.storage.local.set({status});await enforceRules();await chrome.action.setBadgeText({text:status.paused?'暂停':''});}
- catch{if(!status)status=(await chrome.storage.local.get('status')).status||offlineDefaults;await enforceRules(true);await chrome.action.setBadgeText({text:'离线'});}finally{pending=null;}})();return pending;
+ pending=(async()=>{try{await accept(await request('/api/heartbeat',{client:session+':health',group:null,active:false,browser:browserName}));lastFetch=Date.now();await chrome.storage.local.set({status});await enforceRules();await chrome.action.setBadgeText({text:status.paused?t('暂停'):''});}
+ catch{if(!status)status=(await chrome.storage.local.get('status')).status||offlineDefaults;await enforceRules(true);await chrome.action.setBadgeText({text:t('离线')});}finally{pending=null;}})();return pending;
 }
 chrome.runtime.onMessage.addListener((message,sender,reply)=>{
  if(!sender.tab)return;const intentFrame=(sender.url||'').startsWith(chrome.runtime.getURL('intent.html'));if(sender.frameId!==0&&!intentFrame)return;
@@ -51,7 +53,7 @@ chrome.runtime.onMessage.addListener((message,sender,reply)=>{
  if(blockedPage)url=new URL(url).search.startsWith('?target=')?new URL(url).search.slice(8):'';
  if(!/^https?:\/\//i.test(url))return reply({group:null});
  const group=groupFor(canonicalHost(url));if(!group)return reply({group:null});
- if(!/^[a-zA-Z0-9_-]{1,40}$/.test(message.document||''))throw Error('会话标识无效');
+ if(!/^[a-zA-Z0-9_-]{1,40}$/.test(message.document||''))throw Error(t('会话标识无效'));
  const client=session+':'+sender.tab.id+':'+message.document;
  try{
  if(message.kind==='bonus')await request('/api/bonus',{group:group.id});

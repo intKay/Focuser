@@ -1,5 +1,7 @@
 # Fedora 安装与迁移
 
+新版首次安装推荐 [统一安装器](quickstart.zh-CN.md)：解压源码包后运行 `python3 install.py --new-install`。已有用户运行 `python3 install.py --data-dir /原数据目录`；以下 `setup_fedora.py` 流程仍保留，供只生成模板的用户使用。
+
 Fedora 的 GNOME/KDE、Wayland/X11 均使用浏览器扩展计时，无需读取整个桌面的活动窗口，也不需要关闭 SELinux 或开放防火墙端口。Linux 原生 App 拦截尚未实现；不要将浏览器支持理解为桌面 App 支持。
 
 ## 准备环境

@@ -6,7 +6,7 @@ import os
 import sys
 from pathlib import Path
 
-VERSION = '1.3.0rc1'
+VERSION = '1.3.0rc2'
 API_VERSION = 1
 
 

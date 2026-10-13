@@ -34,6 +34,7 @@ jobs:
       - run: node tests/test_screen_time_extension.cjs
       - run: .venv/bin/python -m build --outdir outputs/packages
       - run: .venv/bin/python scripts/setup_fedora.py --new-install --data-dir /tmp/focuser-ci-data --output /tmp/focuser-ci-unit
+      - run: .venv/bin/python -m screen_time_setup --new-install --data-dir /tmp/focuser-setup-data --output-dir /tmp/focuser-setup-unit
       - run: mkdir -m 700 /tmp/focuser-ci-runtime && systemd-analyze --user verify /tmp/focuser-ci-unit/focuser.service
         env:
           XDG_RUNTIME_DIR: /tmp/focuser-ci-runtime

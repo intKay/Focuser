@@ -20,7 +20,7 @@ async function worker({offline=false,mismatch=false,firefox=false,userAgent,brow
  }});
  vm.runInContext(read('connection.js'),context);
  vm.runInContext(read('vendor/rules.js').replaceAll('export ',''),context);
- vm.runInContext(read('background.js').replace(/^import .*;\r?\n/gm,''),context);
+ vm.runInContext(read('background.js').replace(/^import .*;\r?\n/gm,'').replace('if(globalThis.FocuserI18n) await FocuserI18n.ready;',''),context);
  await vm.runInContext('refresh(true)',context);
  const reply=await new Promise(resolve=>listeners.message({kind:'tick',document:'doc',active:true},{frameId:0,url:'https://example.com/',tab:{id:1,url:'https://example.com/'}},resolve));
  return{reply,requests,stored,updates};
@@ -31,7 +31,7 @@ async function optionsChecks(){
  const stored={apiBase:'http://127.0.0.1:18765',boundInstance:identity};let candidate=identity;
  const context=vm.createContext({URL,AbortSignal,document:{getElementById:id=>nodes[id]},chrome:{storage:{local:{get:async()=>({...stored}),set:async data=>Object.assign(stored,data)}}},fetch:async()=>({ok:true,json:async()=>({service:'focuser',api_version:1,instance_id:candidate})})});
  vm.runInContext(read('connection.js'),context);vm.runInContext(read('options.js'),context);
- await vm.runInContext('load()',context);nodes.port.value='19876';nodes['browser-name'].value='Vivaldi';await nodes.save.onclick();
+ await new Promise(resolve=>setImmediate(resolve));nodes.port.value='19876';nodes['browser-name'].value='Vivaldi';await nodes.save.onclick();
  assert.equal(stored.apiBase,'http://127.0.0.1:19876');
  assert.equal(stored.browserName,'Vivaldi');
  candidate='b'.repeat(32);nodes.port.value='19877';await nodes.save.onclick();

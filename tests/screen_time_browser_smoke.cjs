@@ -21,12 +21,12 @@ async function ready(port){for(let i=0;i<60;i++){try{if((await api(port,'health'
  function start(port,data){return spawn(python,[path.join(root,'scripts/screen_time_server.py'),'--port',String(port),'--data-dir',data,'--no-apps','--no-ui'],{windowsHide:true,env:{...process.env,PYTHONUTF8:'1'}});}
  try{
   server=start(port,data);await ready(port);other=start(otherPort,path.join(fixture,'other-data'));await ready(otherPort);
-  context=await chromium.launchPersistentContext(path.join(fixture,'profile'),{headless:true,...(process.env.FOCUSER_TEST_CHROMIUM?{executablePath:process.env.FOCUSER_TEST_CHROMIUM}:{}),viewport:{width:1280,height:900},args:['--no-proxy-server','--disable-extensions-except='+extension,'--load-extension='+extension]});
+  context=await chromium.launchPersistentContext(path.join(fixture,'profile'),{headless:true,locale:'zh-CN',...(process.env.FOCUSER_TEST_CHROMIUM?{executablePath:process.env.FOCUSER_TEST_CHROMIUM}:{}),viewport:{width:1280,height:900},args:['--no-proxy-server','--disable-extensions-except='+extension,'--load-extension='+extension]});
   await context.route('https://example.com/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Isolated site</title><h1>Fixture page</h1>'}));
   const worker=context.serviceWorkers()[0]||await context.waitForEvent('serviceworker');const workerURL=new URL(worker.url());const extensionOrigin=workerURL.protocol+'//'+workerURL.host;
   const page=context.pages()[0];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:'+port+'/');await page.locator('#cards .card').first().waitFor();
-  checks.controlPage=await page.locator('#hero-label').innerText()==='浏览器隔离测试 · 今日剩余';
+  checks.controlPage=await page.locator('#title').innerText()==='今天';
   await page.getByRole('button',{name:'连接与设置',exact:true}).click();
   checks.downloadLinks=await page.locator('a[href="/extensions/chromium.zip"]').count()===1;
   checks.browserOnlyCapability=(await page.locator('#platform-support').innerText()).includes('禁用了');
@@ -47,14 +47,14 @@ async function ready(port){for(let i=0;i<60;i++){try{if((await api(port,'health'
   for(let i=0;i<50;i++){purpose=page.frames().find(frame=>frame.url().startsWith(extensionOrigin+'/intent.html'));if(purpose)break;await wait(200);}
   assert(purpose,'Isolated intention frame must appear');
   await purpose.getByRole('textbox',{name:'本次使用用途'}).waitFor({timeout:10000});
-  const before=(await api(port,'status')).data.groups[1].used_seconds;await wait(1500);
-  checks.unconfirmedNotCharged=(await api(port,'status')).data.groups[1].used_seconds===before;
+  const before=(await api(port,'status')).data.groups.find(g=>g.id==='social').used_seconds;await wait(1500);
+  checks.unconfirmedNotCharged=(await api(port,'status')).data.groups.find(g=>g.id==='social').used_seconds===before;
   checks.emptyPurposeDisabled=await purpose.getByRole('button',{name:'确认用途，开始使用'}).isDisabled();
   await purpose.getByRole('textbox',{name:'本次使用用途'}).fill('只用于隔离发布验收，不属于真实使用');
   await purpose.getByRole('button',{name:'确认用途，开始使用'}).click();
   console.log('Running a complete fixture-only extra minute');
   const deadline=Date.now()+75000;let exhausted=false;
-  while(Date.now()<deadline){await wait(2000);const status=(await api(port,'status')).data;if(status.groups[1].blocked){exhausted=true;break;}}
+  while(Date.now()<deadline){await wait(2000);const status=(await api(port,'status')).data;if(status.groups.find(g=>g.id==='social').blocked){exhausted=true;break;}}
   checks.completeMinuteConsumed=exhausted;
   checks.secondClaimRejected=(await api(port,'bonus',{group:'social'})).code===400;
   const stored=fs.readFileSync(path.join(data,'state.json'),'utf8');checks.purposeNotStored=!stored.includes('只用于隔离');

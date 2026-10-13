@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import mimetypes
+import os
 import re
 import sys
 import threading
@@ -111,10 +112,14 @@ def make_handler(store, stop, root, port, adapter=None):
                 return self.reply(result)
             if route == "/api/apps":
                 return self.reply({"apps": adapter.available_apps(), 'supported': adapter.native_apps})
-            paths = {"/": "index.html", "/app.js": "app.js", "/style.css": "style.css"}
+            paths = {"/": "index.html", "/app.js": "app.js", "/style.css": "style.css", '/i18n.js': 'i18n.js', '/i18n.json': 'i18n.json'}
             if route not in paths:
                 return self.reply({"error": "Not found"}, 404)
-            content = (root / paths[route]).read_bytes()
+            if route in ('/i18n.js', '/i18n.json'):
+                from screen_time_release import extension_files
+                content = extension_files().joinpath(paths[route]).read_bytes()
+            else:
+                content = (root / paths[route]).read_bytes()
             self.send_response(200)
             self.send_header("Content-Type", mimetypes.guess_type(paths[route])[0] + "; charset=utf-8")
             self.send_header("Content-Length", str(len(content)))
@@ -182,8 +187,12 @@ def make_handler(store, stop, root, port, adapter=None):
 
 
 def main():
+    if len(sys.argv)>1 and sys.argv[1]=='setup':
+        from screen_time_setup import main as setup
+        return setup(sys.argv[2:])
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", type=Path)
+    parser.add_argument('--lang', choices=['auto', 'en', 'zh'], default='auto', help='Native UI language; web UI has its own language selector')
     parser.add_argument("--port", type=int, default=PORT)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--no-ui", action="store_true")
@@ -194,6 +203,8 @@ def main():
     parser.add_argument("--no-apps", action="store_true", help="Testing: never terminate apps")
     parser.add_argument('--version', action='version', version=VERSION)
     args = parser.parse_args()
+    if args.lang != 'auto':
+        os.environ['FOCUSER_LANG'] = args.lang
     if not 1024 <= args.port <= 65535:
         parser.error('端口必须在1024到65535之间')
     view = startup_view(args.no_ui, args.background, args.native_ui)

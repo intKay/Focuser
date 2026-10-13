@@ -5,6 +5,8 @@ icon, copy and pill buttons, and it follows the system light/dark setting.
 """
 from __future__ import annotations
 
+from screen_time_i18n import t, language
+
 import ctypes
 import json
 import subprocess
@@ -38,7 +40,7 @@ class RemoteStore:
         try:
             return json.load(self.opener.open(request, timeout=3))
         except urllib.error.HTTPError as exc:
-            raise ValueError(json.load(exc).get("error", "本地服务请求失败")) from exc
+            raise ValueError(json.load(exc).get("error", t("本地服务请求失败"))) from exc
 
     def snapshot(self):
         return self.call("status")
@@ -79,10 +81,10 @@ def system_palette():
 
 def block_reason(group):
     if group.get("curfew_active"):
-        return "当前处于禁用时段，稍后再来。"
+        return t("当前处于禁用时段，稍后再来。")
     if group.get("mode") == "block":
-        return "这个分类默认禁用，可领取当天唯一的一分钟。"
-    return "今日额度已用完，先停在这里。"
+        return t("这个分类默认禁用，可领取当天唯一的一分钟。")
+    return t("今日额度已用完，先停在这里。")
 
 
 def blend(front, back, amount):
@@ -145,7 +147,7 @@ def ask_intention(store, group_id, client, stop):
     def px(value):
         return int(value * scale)
 
-    root.title("屏幕使用时间")
+    root.title(t("屏幕使用时间"))
     root.configure(bg=colors["bg"])
     root.resizable(False, False)
     width, height = px(460), px(500)
@@ -193,41 +195,41 @@ def ask_intention(store, group_id, client, stop):
                  font=(FONT, -px(13))).pack(side="bottom", pady=px(4))
 
     def blocked_view(group):
-        label("时间额度", 26, "text", bold=True, pady=(px(14), px(6)))
+        label(t("时间额度"), 26, "text", bold=True, pady=(px(14), px(6)))
         label(block_reason(group), 16, "sub", pady=(0, px(8)))
         actions = tk.Frame(frame, bg=colors["bg"])
         actions.pack(pady=(px(34), 0))
-        Pill(actions, "好", root.destroy, colors, scale).pack(pady=px(6))
+        Pill(actions, t("好"), root.destroy, colors, scale).pack(pady=px(6))
         if group["bonus_available"]:
             def bonus():
                 try:
                     store.claim_minute(group_id)
                     render(force=True)
                 except ValueError as exc:
-                    error.set(str(exc))
-            Pill(actions, "再使用 1 分钟", bonus, colors, scale, primary=False).pack(pady=px(6))
+                    error.set(t(str(exc)))
+            Pill(actions, t("再使用 1 分钟"), bonus, colors, scale, primary=False).pack(pady=px(6))
         panel = getattr(store, "panel_url", None)
         if panel:
-            Pill(actions, "打开屏幕使用时间", lambda: webbrowser.open(panel), colors, scale, primary=False,
+            Pill(actions, t("打开屏幕使用时间"), lambda: webbrowser.open(panel), colors, scale, primary=False,
                  height=42, size=13).pack(pady=px(6))
-        label("关闭本窗口会关闭这个 App。", 12, "mute", pady=(px(14), 0))
+        label(t("关闭本窗口会关闭这个 App。"), 12, "mute", pady=(px(14), 0))
         if group["bonus_available"]:
-            label("每天全体分类合计仅一次，网站与 App 共享。", 12, "mute")
+            label(t("每天全体分类合计仅一次，网站与 App 共享。"), 12, "mute")
 
     def intent_view():
-        label("这次打开，要做什么？", 22, "text", bold=True, pady=(px(14), px(4)))
-        label("写下具体用途，再开始使用。", 14, "sub", pady=(0, px(14)))
+        label(t("这次打开，要做什么？"), 22, "text", bold=True, pady=(px(14), px(4)))
+        label(t("写下具体用途，再开始使用。"), 14, "sub", pady=(0, px(14)))
         box = tk.Canvas(frame, width=px(380), height=px(112), bg=colors["bg"], highlightthickness=0, bd=0)
         rounded(box, 1, 1, px(380) - 1, px(112) - 1, px(16), fill=colors["card"], outline=colors["line"])
         entry = tk.Text(box, height=3, font=(FONT, -px(15)), relief="flat", bd=0, wrap="word", bg=colors["card"],
                         fg=colors["text"], insertbackground=colors["text"], highlightthickness=0, padx=0, pady=0)
         box.create_window(px(380) // 2, px(112) // 2, window=entry, width=px(380) - 2 * px(16), height=px(112) - 2 * px(14))
-        placeholder = tk.Label(box, text="例如：查这道题的解法，找到后就关闭", bg=colors["card"], fg=colors["mute"],
+        placeholder = tk.Label(box, text=t("例如：查这道题的解法，找到后就关闭"), bg=colors["card"], fg=colors["mute"],
                                font=(FONT, -px(14)), anchor="w", cursor="xterm")
         hint = box.create_window(px(16), px(14), window=placeholder, anchor="nw")
         placeholder.bind("<Button-1>", lambda _e: entry.focus_set())
         box.pack()
-        submit_button = Pill(frame, "确认用途，开始使用", lambda: submit(), colors, scale)
+        submit_button = Pill(frame, t("确认用途，开始使用"), lambda: submit(), colors, scale)
         submit_button.pack(pady=(px(22), px(8)))
 
         def changed(_event=None):
@@ -246,12 +248,12 @@ def ask_intention(store, group_id, client, stop):
                 approved = True
                 root.destroy()
             except ValueError as exc:
-                error.set(str(exc))
+                error.set(t(str(exc)))
         entry.bind("<KeyRelease>", changed)
         entry.bind("<Control-Return>", lambda _e: (submit(), "break")[1])
         entry.bind("<Tab>", lambda _e: (submit_button.focus_set(), "break")[1])
         changed()
-        label("用途不保存、不上传。关闭窗口会关闭目标 App。", 12, "mute", pady=(px(4), 0))
+        label(t("用途不保存、不上传。关闭窗口会关闭目标 App。"), 12, "mute", pady=(px(4), 0))
         entry.focus_set()
 
     def poll():

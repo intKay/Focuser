@@ -136,6 +136,7 @@ def open_panel(url):
 
 
 def run_tray(store, stop, url):
+    from screen_time_i18n import t
     import pystray
     from PIL import Image, ImageDraw
     image = Image.new("RGBA", (64, 64), (0, 122, 255, 255))
@@ -152,7 +153,7 @@ def run_tray(store, stop, url):
         else:
             threading.Thread(target=open_panel, args=(url,), daemon=True).start()
 
-    menu = pystray.Menu(pystray.MenuItem("打开屏幕使用时间", lambda: threading.Thread(target=open_panel, args=(url,), daemon=True).start(), default=True),
-                        pystray.MenuItem("暂停验证 / 恢复限制", pause_app),
-                        pystray.MenuItem("退出验证（网页）", quit_app))
-    pystray.Icon("screen-time", image, "屏幕使用时间", menu).run()
+    menu = pystray.Menu(pystray.MenuItem(t("打开屏幕使用时间"), lambda: threading.Thread(target=open_panel, args=(url,), daemon=True).start(), default=True),
+                        pystray.MenuItem(t("暂停验证 / 恢复限制"), pause_app),
+                        pystray.MenuItem(t("退出验证（网页）"), quit_app))
+    pystray.Icon("screen-time", image, t("屏幕使用时间"), menu).run()

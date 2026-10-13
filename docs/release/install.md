@@ -1,5 +1,7 @@
 # 安装、浏览器与升级
 
+推荐先阅读新的 [English quickstart](quickstart.en.md) / [中文快速安装](quickstart.zh-CN.md)。本页保留手动安装与升级细节。
+
 ## 第一次安装
 
 1. 使用 Python 3.10+，在固定目录创建虚拟环境。Windows 推荐安装 `.[desktop]`；macOS/Linux 安装 `.`。

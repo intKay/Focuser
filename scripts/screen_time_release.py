@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 import tempfile
+import shutil
 import zipfile
 from pathlib import Path
 
@@ -27,7 +28,7 @@ def extension_entries(browser='chromium'):
             if entry.is_dir():
                 if entry.name == 'vendor':
                     copy_tree(entry, prefix + entry.name + '/')
-            elif entry.name != 'manifest.json' and entry.name.endswith(('.js', '.html', '.css', '.txt', '.md')):
+            elif entry.name != 'manifest.json' and entry.name.endswith(('.js', '.html', '.css', '.txt', '.md', '.json')):
                 entries.append((prefix + entry.name, entry.read_bytes()))
     copy_tree(source)
     manifest = json.loads(source.joinpath('manifest.json').read_text(encoding='utf-8'))
@@ -61,11 +62,11 @@ def build_extension(destination, browser='chromium'):
 
 def source_files(root):
     root = Path(root)
-    for name in ['README.md', 'LICENSE', 'pyproject.toml', 'CHANGELOG.md', 'SECURITY.md', 'CONTRIBUTING.md', '一键配置.cmd']:
+    for name in ['README.md', 'README.zh-CN.md', 'LICENSE', 'pyproject.toml', 'CHANGELOG.md', 'SECURITY.md', 'CONTRIBUTING.md', '一键配置.cmd', 'install.py', '.gitignore']:
         yield root / name
     for folder, suffixes in [('scripts', {'.py', '.ps1'}), ('tests', {'.py', '.cjs'}),
                              ('resources/screen_time', {'.py', '.js', '.ts', '.html', '.css', '.json', '.txt', '.md'}),
-                             ('docs/release', {'.md'}), ('.github/workflows', {'.yml', '.yaml'})]:
+                             ('docs/release', {'.md'}), ('docs/assets', {'.png'}), ('.github/workflows', {'.yml', '.yaml'})]:
         for path in sorted((root / folder).rglob('*')):
             if path.is_file() and '__pycache__' not in path.parts and (path.suffix in suffixes or path.name == 'LICENSE'):
                 yield path
@@ -80,7 +81,7 @@ def write_zip(path, entries):
             archive.writestr(info, data)
 
 
-def build_release(root, output):
+def build_release(root, output, wheel=None):
     root, output = Path(root).resolve(), Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     built = []
@@ -93,6 +94,16 @@ def build_release(root, output):
             target = output / f'focuser-local-{VERSION}-{browser}.zip'
             write_zip(target, [(str(p.relative_to(ext)).replace('\\', '/'), p.read_bytes()) for p in sorted(ext.rglob('*')) if p.is_file()])
             built.append(target)
+    if wheel:
+        wheel = Path(wheel).resolve()
+        expected = f'focuser_local-{VERSION}-py3-none-any.whl'
+        if wheel.name != expected or not wheel.is_file():
+            raise ValueError('Expected a built wheel for the current release version')
+        destination = output / wheel.name
+        if destination.exists():
+            raise FileExistsError(destination)
+        shutil.copyfile(wheel, destination)
+        built.append(destination)
     hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in built}
     (output / 'SHA256SUMS').write_text(''.join(f'{digest}  {name}\n' for name, digest in hashes.items()), encoding='utf-8')
     return hashes
@@ -102,11 +113,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--extension-only', choices=['chromium', 'firefox'])
+    parser.add_argument('--wheel', type=Path, help='Include this verified-version wheel in SHA256SUMS')
     args = parser.parse_args()
     if args.extension_only:
         print(build_extension(args.output, args.extension_only))
     else:
-        print(json.dumps(build_release(Path(__file__).resolve().parents[1], args.output), indent=2))
+        print(json.dumps(build_release(Path(__file__).resolve().parents[1], args.output, args.wheel), indent=2))
 
 
 if __name__ == '__main__':

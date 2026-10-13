@@ -5,7 +5,7 @@
 <nav><button class="selected" data-view="today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>今天</button><button data-view="limits"><svg viewBox="0 0 24 24"><path d="M7 4h10M7 20h10M8 4v3.5c0 2 2.5 3 4 4.5-1.5 1.5-4 2.5-4 4.5V20M16 4v3.5c0 2-2.5 3-4 4.5 1.5 1.5 4 2.5 4 4.5V20"/></svg>时间额度</button><button data-view="history"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>近两周</button><button data-view="setup"><svg viewBox="0 0 24 24"><path d="M9.5 14.5l5-5M10 6.5l1.2-1.2a3.5 3.5 0 015 5L15 11.5M14 17.5l-1.2 1.2a3.5 3.5 0 01-5-5L9 12.5"/></svg>连接与设置</button></nav>
 <div class="local"><i></i>仅保存在这台电脑</div></aside>
 <main>
-<header><div class="headtext"><button id="back" class="round" aria-label="返回" hidden>‹</button><div><p class="eyebrow" id="date">本地屏幕使用时间</p><h1 id="title">今天</h1></div></div><button id="pause" class="light">暂停限制</button></header>
+<header><div class="headtext"><button id="back" class="round" aria-label="返回" hidden>‹</button><div><p class="eyebrow" id="date">本地屏幕使用时间</p><h1 id="title">今天</h1></div></div><label class="language"><select data-language aria-label="Language / 语言"><option value="en">English</option><option value="zh">简体中文</option></select></label><button id="pause" class="light">暂停限制</button></header>
 <div id="connection" role="status"></div>
 
 <section id="today" class="view">
@@ -28,7 +28,7 @@
 <div class="panel"><h2>桌面</h2><p id="platform-support" role="status">正在读取…</p></div>
 <div class="panel"><h2>退出</h2><button id="quit" class="danger">退出并恢复访问</button></div>
 </section>
-<footer>Focuser Local 1.3 RC1 · MIT</footer>
+<footer>Focuser Local 1.3 RC2 · MIT</footer>
 </main>
 
 <dialog id="picker" class="sheet">
@@ -40,5 +40,5 @@
 </dialog>
 <dialog id="confirm" class="alert"><h3 id="confirm-title"></h3><p id="confirm-text"></p><div class="alertbtns"><button id="confirm-no" class="light" type="button">取消</button><button id="confirm-yes" type="button">好</button></div></dialog>
 <div id="toast" class="toast" role="status" hidden></div>
-<script src="app.js"></script>
+<script src="i18n.js"></script><script src="app.js"></script>
 </body></html>

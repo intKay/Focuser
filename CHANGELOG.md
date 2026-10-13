@@ -1,5 +1,15 @@
 # 变更记录
 
+## 1.3.0rc2 — 2026-10-13
+
+- English and Simplified Chinese dashboard, extension prompts, block pages, validation messages and Windows native prompts; language preferences do not change quota state.
+- Unified source installer (`install.py`) and installed-package setup (`focuser setup`), with preserved data paths and opt-in first-install semantics.
+- English README with a matching Chinese translation, synthetic screenshots and clear asset/platform installation guides.
+- Public prerelease assets: source ZIP, wheel, Chromium/Firefox extensions and SHA256SUMS. Native Linux/macOS app limits and signed Firefox distribution remain pending.
+- 新增中英文界面与 Windows 原生提示；语言切换不修改规则、用量、额外分钟及绑定。
+- 统一源码安装器及 `focuser setup`，明确区分首次使用与迁移，保留原数据与门槛。
+- 英文首页、对应中文翻译、模拟数据截图，以及按资产和平台划分的安装指南。
+
 ## 未发布 — 2026-10-13
 
 - 面向公开仓库重写用途、功能、隐私边界与人/Agent 开发入口；明确桌面浏览器跨平台支持与 Windows 原生 App 支持的区别。

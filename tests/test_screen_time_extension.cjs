@@ -15,4 +15,5 @@ async function run({runtime,client=true,response={ok:true},network=false}={}){
  r=await run({network:true});assert(r.nodes.error.textContent.includes('本地服务'));assert.equal(r.nodes.submit.disabled,false);
  console.log('5 extension intention regression checks passed');
  await require('./extension_portable_checks.cjs')();
+ await require('./test_screen_time_i18n.cjs')();
 })().catch(error=>{console.error(error);process.exitCode=1;});
