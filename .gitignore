@@ -11,6 +11,7 @@ build/
 *.log
 state*.json
 *.focuser
+focuser-config*.json
 *.bak
 *.backup
 .codex/

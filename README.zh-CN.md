@@ -75,7 +75,7 @@ Focuser 是自律工具；本机管理员仍可停服、卸载扩展或改动本
 
 ## 给开发者与 Agent
 
-当前源码新增[加密配置导入/导出](docs/release/config-transfer.md)，尚未包含在既有 v1.3.0-rc.2 Release 包中。
+当前源码新增[配置导入/导出](docs/release/config-transfer.md)，尚未包含在既有 v1.3.0-rc.2 Release 包中。
 
 基础服务使用 Python 标准库，界面使用原生 JavaScript；Windows 桌面依赖可选。先阅读 [架构与 API v1](docs/release/architecture.md)、[贡献规则](CONTRIBUTING.md)。
 

@@ -68,7 +68,9 @@ def source_files(root):
                              ('resources/screen_time', {'.py', '.js', '.ts', '.html', '.css', '.json', '.txt', '.md'}),
                              ('docs/release', {'.md'}), ('docs/assets', {'.png'}), ('.github/workflows', {'.yml', '.yaml'})]:
         for path in sorted((root / folder).rglob('*')):
-            if path.is_file() and '__pycache__' not in path.parts and (path.suffix in suffixes or path.name == 'LICENSE'):
+            if (path.is_file() and '__pycache__' not in path.parts
+                    and not path.name.lower().startswith('focuser-config')
+                    and (path.suffix in suffixes or path.name == 'LICENSE')):
                 yield path
 
 

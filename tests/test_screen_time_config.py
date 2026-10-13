@@ -21,6 +21,17 @@ from screen_time_server import make_handler, resource_root
 
 
 class ConfigTransferTests(unittest.TestCase):
+    def test_public_source_bundle_excludes_personal_json_exports(self):
+        from screen_time_release import source_files
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);resources=root/'resources/screen_time'
+            resources.mkdir(parents=True)
+            (resources/'focuser-config-personal.json').write_text('{}')
+            (resources/'manifest.json').write_text('{}')
+            names=[path.name for path in source_files(root)]
+            self.assertNotIn('focuser-config-personal.json',names)
+            self.assertIn('manifest.json',names)
+
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.data=Path(self.temp.name)
         self.now=time.time();self.store=BudgetStore(self.data,clock=lambda:self.now,monotonic=lambda:100)
