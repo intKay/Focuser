@@ -1,0 +1,39 @@
+name: portable-regression
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  tests:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        python: ['3.10', '3.13']
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install ".[desktop]" build
+      - run: python -m unittest discover -s tests -p "test_*.py"
+      - run: node tests/test_screen_time_extension.cjs
+      - run: python -m build --outdir outputs/packages
+      - run: python scripts/screen_time_release.py --output outputs/distribution
+  fedora:
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - run: dnf install -y git python3 python3-pip nodejs systemd
+      - uses: actions/checkout@v4
+      - run: python3 -m venv .venv
+      - run: .venv/bin/python -m pip install . build
+      - run: .venv/bin/python -m unittest discover -s tests -p "test_*.py"
+      - run: node tests/test_screen_time_extension.cjs
+      - run: .venv/bin/python -m build --outdir outputs/packages
+      - run: .venv/bin/python scripts/setup_fedora.py --new-install --data-dir /tmp/focuser-ci-data --output /tmp/focuser-ci-unit
+      - run: mkdir -m 700 /tmp/focuser-ci-runtime && systemd-analyze --user verify /tmp/focuser-ci-unit/focuser.service
+        env:
+          XDG_RUNTIME_DIR: /tmp/focuser-ci-runtime

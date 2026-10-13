@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "屏幕使用时间 · Local",
+  "version": "1.3.0",
+  "minimum_chrome_version": "120",
+  "options_ui": {"page": "options.html", "open_in_tab": true},
+  "description": "网站与桌面App共享本地每日额度。免费、离线，不上传浏览记录。",
+  "permissions": ["storage", "alarms", "declarativeNetRequest"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {"service_worker": "background.js", "type": "module"},
+  "action": {"default_title": "打开屏幕使用时间"},
+  "content_scripts": [{"matches": ["http://*/*", "https://*/*"], "exclude_matches": ["http://127.0.0.1/*", "http://localhost/*"], "js": ["content.js"], "run_at": "document_start"}],
+  "web_accessible_resources": [{"resources": ["blocked.html", "blocked.js", "blocked.css", "intent.html", "intent.js"], "matches": ["http://*/*", "https://*/*"]}]
+}

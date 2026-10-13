@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>屏幕使用时间</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<aside><div class="brand"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v3.2c0 2.3-1.4 3.7-3.2 5 1.8 1.3 3.2 2.7 3.2 5V21H6v-4.8c0-2.3 1.4-3.7 3.2-5C7.400 9.900 6 8.500 6 6.200z"/></svg></span><b>屏幕使用时间</b></div>
+<nav><button class="selected" data-view="today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>今天</button><button data-view="limits"><svg viewBox="0 0 24 24"><path d="M7 4h10M7 20h10M8 4v3.5c0 2 2.5 3 4 4.5-1.5 1.5-4 2.5-4 4.5V20M16 4v3.5c0 2-2.5 3-4 4.5 1.5 1.5 4 2.5 4 4.5V20"/></svg>时间额度</button><button data-view="history"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>近两周</button><button data-view="setup"><svg viewBox="0 0 24 24"><path d="M9.5 14.5l5-5M10 6.5l1.2-1.2a3.5 3.5 0 015 5L15 11.5M14 17.5l-1.2 1.2a3.5 3.5 0 01-5-5L9 12.5"/></svg>连接与设置</button></nav>
+<div class="local"><i></i>仅保存在这台电脑</div></aside>
+<main>
+<header><div class="headtext"><button id="back" class="round" aria-label="返回" hidden>‹</button><div><p class="eyebrow" id="date">本地屏幕使用时间</p><h1 id="title">今天</h1></div></div><button id="pause" class="light">暂停限制</button></header>
+<div id="connection" role="status"></div>
+
+<section id="today" class="view">
+ <div class="hero"><div class="label">今日已用</div><div id="remaining" class="big">0<span>分钟</span></div><div id="stack" class="stack-bar"></div><div id="legend" class="legend"></div></div>
+
+ <div class="section-title"><h2>分类</h2></div>
+ <div id="cards"></div>
+
+</section>
+
+<section id="limits" class="view" hidden>
+ <div id="limits-body"></div>
+ <div id="savebar" class="savebar" hidden><span id="saved" role="status"></span><button id="discard" class="light">放弃更改</button><button id="save">保存规则</button></div>
+</section>
+
+<section id="history" class="view" hidden><div class="panel"><h2>每日使用</h2><div id="bars"></div></div></section>
+
+<section id="setup" class="view" hidden>
+<div class="panel"><h2>浏览器</h2><div id="health"></div><p><a href="/extensions/chromium.zip" download>Chrome / Edge / Brave / Opera / Vivaldi 扩展</a> · <a href="/extensions/firefox.zip" download>Firefox 测试包</a></p><ol><li>解压到固定文件夹，不要移动或删除。</li><li>打开 <code>chrome://extensions</code>（Edge 用 <code>edge://extensions</code>，Vivaldi 用 <code>vivaldi://extensions</code>），开启开发者模式并加载该文件夹。Firefox 在 <code>about:debugging#/runtime/this-firefox</code> 临时载入 manifest.json。</li><li>每个浏览器都需安装并启用扩展，连接同一个本地服务，分类额度共用。Vivaldi 可在扩展选项中选择浏览器名称。端口不是 18765 时，在“扩展选项”里改成本页地址中的端口。</li></ol></div>
+<div class="panel"><h2>桌面</h2><p id="platform-support" role="status">正在读取…</p></div>
+<div class="panel"><h2>退出</h2><button id="quit" class="danger">退出并恢复访问</button></div>
+</section>
+<footer>Focuser Local 1.3 RC1 · MIT</footer>
+</main>
+
+<dialog id="picker" class="sheet">
+ <div class="sheethead"><button id="closepicker" class="round" aria-label="完成">✕</button><div class="sheettitle"><b>添加 App</b><small id="pickercount"></small></div><span></span></div>
+ <input id="pickersearch" type="search" placeholder="搜索 App" aria-label="搜索 App">
+ <div id="applist"></div>
+ <form id="manualform" class="manual"><input id="manualname" placeholder="程序名，例如 douyin.exe" aria-label="手动输入程序名"><button class="light" type="submit">添加</button></form>
+ <p id="pickererror" class="bad" role="status"></p>
+</dialog>
+<dialog id="confirm" class="alert"><h3 id="confirm-title"></h3><p id="confirm-text"></p><div class="alertbtns"><button id="confirm-no" class="light" type="button">取消</button><button id="confirm-yes" type="button">好</button></div></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="app.js"></script>
+</body></html>
